@@ -1,6 +1,6 @@
 import { createClient } from '@/lib/supabase/server'
 import { redirect } from 'next/navigation'
-import { cookies } from 'next/headers'
+import { cookies, headers } from 'next/headers'
 
 export default async function LoginPage() {
   const supabase = await createClient()
@@ -38,7 +38,9 @@ function LoginForm() {
   async function signInWithGoogle() {
     'use server'
     const supabase = await createClient()
-    const origin = process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000'
+    const headersList = await headers()
+    const host = headersList.get('host') ?? 'localhost:3000'
+    const origin = host.startsWith('localhost') ? `http://${host}` : `https://${host}`
 
     const { data, error } = await supabase.auth.signInWithOAuth({
       provider: 'google',
@@ -56,7 +58,7 @@ function LoginForm() {
     <form action={signInWithGoogle}>
       <button
         type="submit"
-        className="w-full flex items-center justify-center gap-3 bg-white text-zinc-900 font-semibold py-4 px-6 rounded-2xl text-lg hover:bg-zinc-100 active:bg-zinc-200 transition-colors shadow-lg"
+        className="w-full flex items-center justify-center gap-3 hover:bg-zinc-900 hover:text-white border border-zinc-700 bg-white text-zinc-700 font-semibold py-4 px-6 rounded-2xl text-lg transition-colors shadow-lg cursor-pointer"
       >
         <GoogleIcon />
         Sign in with Google
@@ -82,7 +84,7 @@ function GuestForm() {
     <form action={continueAsGuest}>
       <button
         type="submit"
-        className="w-full flex items-center justify-center gap-3 bg-zinc-800 text-zinc-200 font-semibold py-4 px-6 rounded-2xl text-lg hover:bg-zinc-700 active:bg-zinc-600 transition-colors border border-zinc-700"
+        className="w-full flex items-center justify-center gap-3 bg-zinc-800 text-zinc-200 font-semibold py-4 px-6 rounded-2xl text-lg hover:bg-zinc-900 active:bg-zinc-600 transition-colors border border-zinc-700 cursor-pointer"
       >
         Continue as Guest
       </button>

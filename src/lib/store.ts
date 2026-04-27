@@ -99,15 +99,20 @@ export const useWorkoutStore = create<WorkoutStore>((set, get) => ({
       const prev = readGuestSession(defaultDayIndex, prevWeek.weekNumber, prevWeek.year)
 
       const dayExercises = byDay[defaultDayIndex] ?? []
-      const drafts: Record<string, ExerciseLogDraft> = {}
-      dayExercises.forEach((ex) => {
-        drafts[ex.id] = current?.drafts[ex.id] ?? emptyDraft()
-      })
-
       const prevLogs: Record<string, ExerciseLog> = {}
       dayExercises.forEach((ex) => {
         const d = prev?.drafts[ex.id]
         if (d && draftHasData(d)) prevLogs[ex.id] = guestDraftToLog(d, ex.id)
+      })
+
+      const drafts: Record<string, ExerciseLogDraft> = {}
+      dayExercises.forEach((ex) => {
+        const thisWeek = current?.drafts[ex.id]
+        drafts[ex.id] = (thisWeek && draftHasData(thisWeek))
+          ? thisWeek
+          : prev?.drafts[ex.id] && draftHasData(prev.drafts[ex.id])
+          ? prev.drafts[ex.id]
+          : emptyDraft()
       })
 
       set({ isGuest: true, exercises: byDay, exercisesLoaded: true, drafts, prevLogs, loading: false })
@@ -169,7 +174,11 @@ export const useWorkoutStore = create<WorkoutStore>((set, get) => ({
       const drafts: Record<string, ExerciseLogDraft> = {}
       const dayExercises = byDay[defaultDayIndex] ?? []
       dayExercises.forEach((ex) => {
-        drafts[ex.id] = currentLogs[ex.id] ? logToDraft(currentLogs[ex.id]) : emptyDraft()
+        drafts[ex.id] = currentLogs[ex.id]
+          ? logToDraft(currentLogs[ex.id])
+          : prevLogs[ex.id]
+          ? logToDraft(prevLogs[ex.id])
+          : emptyDraft()
       })
 
       set({ isGuest: false, exercises: byDay, exercisesLoaded: true, currentLogs, prevLogs, drafts, loading: false })
@@ -187,12 +196,19 @@ export const useWorkoutStore = create<WorkoutStore>((set, get) => ({
       const current = readGuestSession(dayIndex, weekNumber, year)
       const prev = readGuestSession(dayIndex, prevWeek.weekNumber, prevWeek.year)
       const dayExercises = exercises[dayIndex] ?? []
-      const drafts: Record<string, ExerciseLogDraft> = {}
-      dayExercises.forEach((ex) => { drafts[ex.id] = current?.drafts[ex.id] ?? emptyDraft() })
       const prevLogs: Record<string, ExerciseLog> = {}
       dayExercises.forEach((ex) => {
         const d = prev?.drafts[ex.id]
         if (d && draftHasData(d)) prevLogs[ex.id] = guestDraftToLog(d, ex.id)
+      })
+      const drafts: Record<string, ExerciseLogDraft> = {}
+      dayExercises.forEach((ex) => {
+        const thisWeek = current?.drafts[ex.id]
+        drafts[ex.id] = (thisWeek && draftHasData(thisWeek))
+          ? thisWeek
+          : prev?.drafts[ex.id] && draftHasData(prev.drafts[ex.id])
+          ? prev.drafts[ex.id]
+          : emptyDraft()
       })
       set({ currentDayIndex: dayIndex, drafts, prevLogs, hasUnsavedChanges: false })
       return
@@ -234,7 +250,11 @@ export const useWorkoutStore = create<WorkoutStore>((set, get) => ({
         const dayExercises = exercises[dayIndex] ?? []
         const drafts: Record<string, ExerciseLogDraft> = {}
         dayExercises.forEach((ex) => {
-          drafts[ex.id] = currentLogs[ex.id] ? logToDraft(currentLogs[ex.id]) : emptyDraft()
+          drafts[ex.id] = currentLogs[ex.id]
+            ? logToDraft(currentLogs[ex.id])
+            : prevLogs[ex.id]
+            ? logToDraft(prevLogs[ex.id])
+            : emptyDraft()
         })
 
         set({ currentLogs, prevLogs, drafts, hasUnsavedChanges: false, loading: false })
