@@ -12,7 +12,7 @@
 
 DO $$
 DECLARE
-  v_uid  UUID := 'YOUR-USER-ID-HERE';
+  v_uid  UUID := '097a8653-544b-467a-9eb5-a691023db29e';
   sid    UUID;
 
   -- Day 0 (Push A) exercises
